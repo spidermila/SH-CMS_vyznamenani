@@ -1,5 +1,6 @@
 # SH-CMS_vyznamenani
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/spidermila/SH-CMS_vyznamenani/main.svg)](https://results.pre-commit.ci/latest/github/spidermila/SH-CMS_vyznamenani/main)
+
 Skript pro vytvoření přehledu vyznamenání členů SDH SH ČMS.
 
 ## Získání programu

@@ -51,8 +51,6 @@ def main():
                 lline = line.strip().split(' ')
                 if len(lline) > 0:
                     lines.append(lline)
-    finally:
-        fp.close()
 
     hasici = Hasici()
     hasici.create_hasici_from_export(lines)

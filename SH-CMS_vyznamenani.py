@@ -1,3 +1,4 @@
+'''Program pro vytvoření přehledu vyznamenání členů SDH SH-ČMS'''
 import argparse
 import os
 from datetime import datetime
@@ -36,7 +37,7 @@ def main():
     args = parser.parse_args()
 
     if not os.path.isfile(args.soubor):
-        print('Soubor {} neexistuje!'.format(args.soubor))
+        print(f'Soubor {args.soubor} neexistuje!')
         return 1
 
     if args.output.lower()[-5:] != '.xlsx':
@@ -45,11 +46,11 @@ def main():
 
     lines = []
     try:
-        fp = open(args.soubor)
-        for line in fp:
-            lline = line.strip().split(' ')
-            if len(lline) > 0:
-                lines.append(lline)
+        with open(args.soubor, encoding='UTF-8') as fp:
+            for line in fp:
+                lline = line.strip().split(' ')
+                if len(lline) > 0:
+                    lines.append(lline)
     finally:
         fp.close()
 

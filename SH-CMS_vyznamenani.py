@@ -45,12 +45,11 @@ def main():
         return 1
 
     lines = []
-    try:
-        with open(args.soubor, encoding='UTF-8') as fp:
-            for line in fp:
-                lline = line.strip().split(' ')
-                if len(lline) > 0:
-                    lines.append(lline)
+    with open(args.soubor, encoding='UTF-8') as fp:
+        for line in fp:
+            lline = line.strip().split(' ')
+            if len(lline) > 0:
+                lines.append(lline)
 
     hasici = Hasici()
     hasici.create_hasici_from_export(lines)

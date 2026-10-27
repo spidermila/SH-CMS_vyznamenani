@@ -17,6 +17,7 @@ from flask import session
 from flask import url_for
 from werkzeug.utils import secure_filename
 
+from libs.processor import PrazdnyExportError
 from libs.processor import process_txt_content
 from web import evidencesdh_manager
 
@@ -221,6 +222,17 @@ def index():
                 success_msg='Soubor byl úspěšně vygenerován.',
                 download_link=url_for('download_file', file_id=file_id),
             )
+        except PrazdnyExportError:
+            app.logger.warning('Export contains no valid members')
+            return render_template(
+                'index.html',
+                error=(
+                    'Export neobsahuje žádného člena s platným datem '
+                    'narození a členství.'
+                ),
+                success_msg=None,
+                download_link=None,
+            ), 422
         except Exception:
             logging.exception('Processing failed')
             return render_template(

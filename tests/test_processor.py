@@ -1,7 +1,9 @@
 import io
 
 import openpyxl  # type: ignore
+import pytest  # type: ignore
 
+from libs.processor import PrazdnyExportError
 from libs.processor import process_txt_content
 
 EXPORT = '''Jan Novák
@@ -20,3 +22,11 @@ def test_process_txt_content():
     )['splnene podminky']
     assert ws['A2'].value == 'Jan Novák'
     assert ws.max_row == 2
+
+
+@pytest.mark.parametrize(
+    'txt', ['', 'konec\n', 'Jan\n' + '=' * 26 + '\n- 55, Věk\nkonec\n'],
+)
+def test_empty_export(txt):
+    with pytest.raises(PrazdnyExportError):
+        process_txt_content(txt)

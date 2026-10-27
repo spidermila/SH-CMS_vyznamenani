@@ -331,11 +331,6 @@ class Medaile_za_mimoradne_zasluhy(Vyznamenani):
                 )
             ):
                 vysledek.append(hasic.medaile_sv_floriana.nazev)
-            elif not rok - hasic.medaile_sv_floriana.obdrzene_rok >= 5:
-                vysledek.append(
-                    f'{hasic.medaile_sv_floriana.obdrzene_rok + 5} ' +
-                    f'(5 let od {hasic.medaile_sv_floriana.nazev})',
-                )
             return vysledek
 
 

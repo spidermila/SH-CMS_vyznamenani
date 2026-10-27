@@ -182,7 +182,12 @@ TABLE = [
     (
         'medaile_za_mimoradne_zasluhy',
         {'medaile_sv_floriana': YEAR, 'odznak_sv_floriana': 2000},
-        1960, 1980, False, [SHCMS, f'{YEAR + 5} (5 let od {MSF})'],
+        1960, 1980, False, [SHCMS],
+    ),
+    (
+        'medaile_za_mimoradne_zasluhy',
+        {'medaile_sv_floriana': 2021, 'odznak_sv_floriana': 2020},
+        1960, 1980, False, [SHCMS],
     ),
     (
         'medaile_za_mimoradne_zasluhy', {'odznak_sv_floriana': 2000},
@@ -334,6 +339,15 @@ def test_rad_consistency(make_hasic, ok):
         assert '(30 let členství)' in ' '.join(res)
 
 
+def test_mmz_msf_too_recent_reason(make_hasic):
+    h = make_hasic(
+        cestne_uznani_shcms=YEAR - 1,
+        medaile_sv_floriana=YEAR - 4,
+    )
+    res = h.medaile_za_mimoradne_zasluhy.splnene_podminky(h, YEAR)
+    assert res == [h.medaile_sv_floriana.nazev]
+
+
 def aw(attr, n=0):
     return ('aw', attr, n)
 
@@ -417,4 +431,11 @@ def test_podminka_matches_splnene(make_hasic, attr):
         )
         vyz = getattr(h, attr)
         assert vyz.podminka(h, YEAR) is expected, d
-        assert (vyz.splnene_podminky(h, YEAR) == PS) is expected, d
+        res = vyz.splnene_podminky(h, YEAR)
+        assert (res == PS) is expected, d
+        if not expected:
+            failed = sum(
+                not any(d[c] is not None and d[c] >= 0 for c in alts)
+                for alts in RULES[attr]
+            )
+            assert len(res) == failed, (d, res)

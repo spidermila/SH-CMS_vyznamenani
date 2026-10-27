@@ -1,6 +1,5 @@
 from abc import ABC
 from abc import abstractmethod
-from datetime import datetime
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from libs.hasic import Hasic
@@ -20,7 +19,7 @@ class Vyznamenani(ABC):
         pass
 
     @abstractmethod
-    def splnene_podminky(self, hasic: 'Hasic') -> list[str]:
+    def splnene_podminky(self, hasic: 'Hasic', rok: int) -> list[str]:
         pass
 
 
@@ -34,7 +33,7 @@ class Cestne_uznani_sdh(Vyznamenani):
         else:
             return False
 
-    def splnene_podminky(self, hasic: 'Hasic') -> list[str]:
+    def splnene_podminky(self, hasic: 'Hasic', rok: int) -> list[str]:
         if self.obdrzene:
             return [f'Obdrženo {self.obdrzene_rok}']
         return ['Podmínky splněny']
@@ -50,7 +49,7 @@ class Cestne_uznani_osh(Vyznamenani):
         else:
             return False
 
-    def splnene_podminky(self, hasic: 'Hasic') -> list[str]:
+    def splnene_podminky(self, hasic: 'Hasic', rok: int) -> list[str]:
         if self.obdrzene:
             return [f'Obdrženo {self.obdrzene_rok}']
         if hasic.cestne_uznani_sdh.obdrzene:
@@ -74,7 +73,7 @@ class Cestne_uznani_ksh(Vyznamenani):
         else:
             return False
 
-    def splnene_podminky(self, hasic: 'Hasic') -> list[str]:
+    def splnene_podminky(self, hasic: 'Hasic', rok: int) -> list[str]:
         if self.obdrzene:
             return [f'Obdrženo {self.obdrzene_rok}']
         if (
@@ -92,7 +91,6 @@ class Cestne_uznani_ksh(Vyznamenani):
             if not hasic.medaile_za_zasluhy.obdrzene:
                 vysledek.append(hasic.medaile_za_zasluhy.nazev)
             return vysledek
-        return ['Chyba']
 
 
 class Cestne_uznani_okrsku(Vyznamenani):
@@ -102,7 +100,7 @@ class Cestne_uznani_okrsku(Vyznamenani):
     def podminka(self, hasic: 'Hasic', rok: int) -> bool:
         return False
 
-    def splnene_podminky(self, hasic: 'Hasic') -> list[str]:
+    def splnene_podminky(self, hasic: 'Hasic', rok: int) -> list[str]:
         if self.obdrzene:
             return [f'Obdrženo {self.obdrzene_rok}']
         return ['Již se nedává']
@@ -124,7 +122,7 @@ class Cestne_uznani_shcms(Vyznamenani):
         else:
             return False
 
-    def splnene_podminky(self, hasic: 'Hasic') -> list[str]:
+    def splnene_podminky(self, hasic: 'Hasic', rok: int) -> list[str]:
         if self.obdrzene:
             return [f'Obdrženo {self.obdrzene_rok}']
         if (
@@ -145,7 +143,6 @@ class Cestne_uznani_shcms(Vyznamenani):
             if not hasic.medaile_za_zasluhy.obdrzene:
                 vysledek.append(hasic.medaile_za_zasluhy.nazev)
             return vysledek
-        return ['Chyba']
 
 
 class Medaile_sv_floriana(Vyznamenani):
@@ -165,26 +162,33 @@ class Medaile_sv_floriana(Vyznamenani):
                     return True
         return False
 
-    def splnene_podminky(self, hasic: 'Hasic') -> list[str]:
-        rok = datetime.now().year
+    def splnene_podminky(self, hasic: 'Hasic', rok: int) -> list[str]:
         if self.obdrzene:
             return [f'Obdrženo {self.obdrzene_rok}']
         if (
+            hasic.cestne_uznani_ksh.obdrzene and
+            rok - hasic.cestne_uznani_ksh.obdrzene_rok >= 1 and
             hasic.medaile_za_zasluhy.obdrzene and
             rok - hasic.medaile_za_zasluhy.obdrzene_rok >= 5
         ):
             return ['Podmínky splněny']
         else:
             vysledek = []
+            if not hasic.cestne_uznani_ksh.obdrzene:
+                vysledek.append(hasic.cestne_uznani_ksh.nazev)
+            elif rok - hasic.cestne_uznani_ksh.obdrzene_rok < 1:
+                vysledek.append(
+                    f'{hasic.cestne_uznani_ksh.obdrzene_rok + 1} ' +
+                    f'(1 rok od {hasic.cestne_uznani_ksh.nazev})',
+                )
             if not hasic.medaile_za_zasluhy.obdrzene:
                 vysledek.append(hasic.medaile_za_zasluhy.nazev)
-            elif not rok - hasic.medaile_za_zasluhy.obdrzene_rok >= 5:
+            elif rok - hasic.medaile_za_zasluhy.obdrzene_rok < 5:
                 vysledek.append(
                     f'{hasic.medaile_za_zasluhy.obdrzene_rok + 5} ' +
                     f'(5 let od {hasic.medaile_za_zasluhy.nazev})',
                 )
             return vysledek
-        return ['Chyba']
 
 
 class Medaile_za_mezinar_spolupraci1(Vyznamenani):
@@ -194,7 +198,7 @@ class Medaile_za_mezinar_spolupraci1(Vyznamenani):
     def podminka(self, hasic: 'Hasic', rok: int) -> bool:
         return False
 
-    def splnene_podminky(self, hasic: 'Hasic') -> list[str]:
+    def splnene_podminky(self, hasic: 'Hasic', rok: int) -> list[str]:
         if self.obdrzene:
             return [f'Obdrženo {self.obdrzene_rok}']
         return ['']
@@ -207,7 +211,7 @@ class Medaile_za_mezinar_spolupraci2(Vyznamenani):
     def podminka(self, hasic: 'Hasic', rok: int) -> bool:
         return False
 
-    def splnene_podminky(self, hasic: 'Hasic') -> list[str]:
+    def splnene_podminky(self, hasic: 'Hasic', rok: int) -> list[str]:
         if self.obdrzene:
             return [f'Obdrženo {self.obdrzene_rok}']
         return ['']
@@ -215,12 +219,12 @@ class Medaile_za_mezinar_spolupraci2(Vyznamenani):
 
 class Medaile_za_mezinar_spolupraci3(Vyznamenani):
     def __init__(self):
-        super().__init__('Medaile Za mezinárodní spolupráci IIIs. stupně')
+        super().__init__('Medaile Za mezinárodní spolupráci III. stupně')
 
     def podminka(self, hasic: 'Hasic', rok: int) -> bool:
         return False
 
-    def splnene_podminky(self, hasic: 'Hasic') -> list[str]:
+    def splnene_podminky(self, hasic: 'Hasic', rok: int) -> list[str]:
         if self.obdrzene:
             return [f'Obdrženo {self.obdrzene_rok}']
         return ['']
@@ -240,8 +244,7 @@ class Medaile_za_zasluhy(Vyznamenani):
             return True
         return False
 
-    def splnene_podminky(self, hasic: 'Hasic') -> list[str]:
-        rok = datetime.now().year
+    def splnene_podminky(self, hasic: 'Hasic', rok: int) -> list[str]:
         if self.obdrzene:
             return [f'Obdrženo {self.obdrzene_rok}']
         if (
@@ -262,7 +265,6 @@ class Medaile_za_zasluhy(Vyznamenani):
                     f'(5 let od {hasic.medaile_za_prikladnou_praci.nazev})',
                 )
             return vysledek
-        return ['Chyba']
 
 
 class Medaile_za_mimoradne_zasluhy(Vyznamenani):
@@ -289,12 +291,12 @@ class Medaile_za_mimoradne_zasluhy(Vyznamenani):
             return True
         return False
 
-    def splnene_podminky(self, hasic: 'Hasic') -> list[str]:
-        rok = datetime.now().year
+    def splnene_podminky(self, hasic: 'Hasic', rok: int) -> list[str]:
         if self.obdrzene:
             return [f'Obdrženo {self.obdrzene_rok}']
         if (
             hasic.cestne_uznani_shcms.obdrzene and
+            rok - hasic.cestne_uznani_shcms.obdrzene_rok >= 1 and
             (
                 (
                     hasic.medaile_sv_floriana.obdrzene and
@@ -312,6 +314,11 @@ class Medaile_za_mimoradne_zasluhy(Vyznamenani):
             vysledek = []
             if not hasic.cestne_uznani_shcms.obdrzene:
                 vysledek.append(hasic.cestne_uznani_shcms.nazev)
+            elif not rok - hasic.cestne_uznani_shcms.obdrzene_rok >= 1:
+                vysledek.append(
+                    f'{hasic.cestne_uznani_shcms.obdrzene_rok + 1} ' +
+                    f'(1 rok od {hasic.cestne_uznani_shcms.nazev})',
+                )
             if not (
                 (
                     hasic.medaile_sv_floriana.obdrzene and
@@ -330,7 +337,6 @@ class Medaile_za_mimoradne_zasluhy(Vyznamenani):
                     f'(5 let od {hasic.medaile_sv_floriana.nazev})',
                 )
             return vysledek
-        return ['Chyba']
 
 
 class Medaile_za_odvahu_a_statecnost(Vyznamenani):
@@ -340,7 +346,7 @@ class Medaile_za_odvahu_a_statecnost(Vyznamenani):
     def podminka(self, hasic: 'Hasic', rok: int) -> bool:
         return False
 
-    def splnene_podminky(self, hasic: 'Hasic') -> list[str]:
+    def splnene_podminky(self, hasic: 'Hasic', rok: int) -> list[str]:
         if self.obdrzene:
             return [f'Obdrženo {self.obdrzene_rok}']
         return ['']
@@ -362,8 +368,7 @@ class Medaile_za_prikladnou_praci(Vyznamenani):
         else:
             return False
 
-    def splnene_podminky(self, hasic: 'Hasic') -> list[str]:
-        rok = datetime.now().year
+    def splnene_podminky(self, hasic: 'Hasic', rok: int) -> list[str]:
         if self.obdrzene:
             return [f'Obdrženo {self.obdrzene_rok}']
         if (
@@ -391,7 +396,6 @@ class Medaile_za_prikladnou_praci(Vyznamenani):
                     f'{int(hasic.clenem_od[-4:]) + 10} (10 let členství)',
                 )
             return vysledek
-        return ['Chyba']
 
 
 class Medaile_za_zachranu_zivota(Vyznamenani):
@@ -401,7 +405,7 @@ class Medaile_za_zachranu_zivota(Vyznamenani):
     def podminka(self, hasic: 'Hasic', rok: int) -> bool:
         return False
 
-    def splnene_podminky(self, hasic: 'Hasic') -> list[str]:
+    def splnene_podminky(self, hasic: 'Hasic', rok: int) -> list[str]:
         if self.obdrzene:
             return [f'Obdrženo {self.obdrzene_rok}']
         return ['']
@@ -421,8 +425,7 @@ class Medaile_za_zasluhy_o_vychovu(Vyznamenani):
         else:
             return False
 
-    def splnene_podminky(self, hasic: 'Hasic') -> list[str]:
-        rok = datetime.now().year
+    def splnene_podminky(self, hasic: 'Hasic', rok: int) -> list[str]:
         if self.obdrzene:
             return [f'Obdrženo {self.obdrzene_rok}']
         if (
@@ -436,11 +439,10 @@ class Medaile_za_zasluhy_o_vychovu(Vyznamenani):
                 vysledek.append(hasic.medaile_za_prikladnou_praci.nazev)
             if not rok - int(hasic.clenem_od[-4:]) >= 10:
                 vysledek.append(
-                    f'{int(hasic.clenem_od[-4:]) + 10}' +
+                    f'{int(hasic.clenem_od[-4:]) + 10} ' +
                     '(10 let členství a práce s mládeží)',
                 )
             return vysledek
-        return ['Chyba']
 
 
 class Od_jine_organizace(Vyznamenani):
@@ -450,7 +452,7 @@ class Od_jine_organizace(Vyznamenani):
     def podminka(self, hasic: 'Hasic', rok: int) -> bool:
         return False
 
-    def splnene_podminky(self, hasic: 'Hasic') -> list[str]:
+    def splnene_podminky(self, hasic: 'Hasic', rok: int) -> list[str]:
         if self.obdrzene:
             return [f'Obdrženo {self.obdrzene_rok}']
         return ['']
@@ -463,7 +465,7 @@ class Odznak_sv_floriana(Vyznamenani):
     def podminka(self, hasic: 'Hasic', rok: int) -> bool:
         return False
 
-    def splnene_podminky(self, hasic: 'Hasic') -> list[str]:
+    def splnene_podminky(self, hasic: 'Hasic', rok: int) -> list[str]:
         if self.obdrzene:
             return [f'Obdrženo {self.obdrzene_rok}']
         return ['Již se nedává']
@@ -476,7 +478,7 @@ class Ostatni_vyznamenani(Vyznamenani):
     def podminka(self, hasic: 'Hasic', rok: int) -> bool:
         return False
 
-    def splnene_podminky(self, hasic: 'Hasic') -> list[str]:
+    def splnene_podminky(self, hasic: 'Hasic', rok: int) -> list[str]:
         if self.obdrzene:
             return [f'Obdrženo {self.obdrzene_rok}']
         return ['']
@@ -489,7 +491,7 @@ class Pametni_medaile_shcms(Vyznamenani):
     def podminka(self, hasic: 'Hasic', rok: int) -> bool:
         return False
 
-    def splnene_podminky(self, hasic: 'Hasic') -> list[str]:
+    def splnene_podminky(self, hasic: 'Hasic', rok: int) -> list[str]:
         if self.obdrzene:
             return [f'Obdrženo {self.obdrzene_rok}']
         return ['']
@@ -502,7 +504,7 @@ class Pametni_stuha_shcms(Vyznamenani):
     def podminka(self, hasic: 'Hasic', rok: int) -> bool:
         return False
 
-    def splnene_podminky(self, hasic: 'Hasic') -> list[str]:
+    def splnene_podminky(self, hasic: 'Hasic', rok: int) -> list[str]:
         if self.obdrzene:
             return [f'Obdrženo {self.obdrzene_rok}']
         return ['']
@@ -523,15 +525,14 @@ class Rad_sv_floriana(Vyznamenani):
             return True
         return False
 
-    def splnene_podminky(self, hasic: 'Hasic') -> list[str]:
-        rok = datetime.now().year
+    def splnene_podminky(self, hasic: 'Hasic', rok: int) -> list[str]:
         if self.obdrzene:
             return [f'Obdrženo {self.obdrzene_rok}']
         if (
             hasic.medaile_za_mimoradne_zasluhy.obdrzene and
             rok - hasic.medaile_za_mimoradne_zasluhy.obdrzene_rok >= 5 and
             rok - int(hasic.clenem_od[-4:]) >= 30 and
-            rok - int(hasic.datum_narozeni[-4:]) >= 28
+            rok - int(hasic.datum_narozeni[-4:]) >= 50
         ):
             return ['Podmínky splněny']
         else:
@@ -545,16 +546,15 @@ class Rad_sv_floriana(Vyznamenani):
                     f'{hasic.medaile_za_mimoradne_zasluhy.obdrzene_rok + 5} ' +
                     f'(5 let od {hasic.medaile_za_mimoradne_zasluhy.nazev})',
                 )
-            if not rok - int(hasic.datum_narozeni[-4:]) >= 28:
+            if not rok - int(hasic.datum_narozeni[-4:]) >= 50:
                 vysledek.append(
-                    f'{int(hasic.datum_narozeni[-4:]) + 28} (28 let věku)',
+                    f'{int(hasic.datum_narozeni[-4:]) + 50} (50 let věku)',
                 )
             if not rok - int(hasic.clenem_od[-4:]) >= 30:
                 vysledek.append(
-                    f'{int(hasic.clenem_od[-4:]) + 30} (10 let členství)',
+                    f'{int(hasic.clenem_od[-4:]) + 30} (30 let členství)',
                 )
             return vysledek
-        return ['Chyba']
 
 
 class Medaile_za_vernost_10(Vyznamenani):
@@ -569,8 +569,7 @@ class Medaile_za_vernost_10(Vyznamenani):
             return True
         return False
 
-    def splnene_podminky(self, hasic: 'Hasic') -> list[str]:
-        rok = datetime.now().year
+    def splnene_podminky(self, hasic: 'Hasic', rok: int) -> list[str]:
         if self.obdrzene:
             return [f'Obdrženo {self.obdrzene_rok}']
         if rok - int(hasic.clenem_od[-4:]) >= 10:
@@ -590,8 +589,7 @@ class Stuzka_za_vernost_20(Vyznamenani):
             return True
         return False
 
-    def splnene_podminky(self, hasic: 'Hasic') -> list[str]:
-        rok = datetime.now().year
+    def splnene_podminky(self, hasic: 'Hasic', rok: int) -> list[str]:
         if self.obdrzene:
             return [f'Obdrženo {self.obdrzene_rok}']
         if rok - int(hasic.clenem_od[-4:]) >= 20:
@@ -611,8 +609,7 @@ class Stuzka_za_vernost_30(Vyznamenani):
             return True
         return False
 
-    def splnene_podminky(self, hasic: 'Hasic') -> list[str]:
-        rok = datetime.now().year
+    def splnene_podminky(self, hasic: 'Hasic', rok: int) -> list[str]:
         if self.obdrzene:
             return [f'Obdrženo {self.obdrzene_rok}']
         if rok - int(hasic.clenem_od[-4:]) >= 30:
@@ -632,8 +629,7 @@ class Stuzka_za_vernost_40(Vyznamenani):
             return True
         return False
 
-    def splnene_podminky(self, hasic: 'Hasic') -> list[str]:
-        rok = datetime.now().year
+    def splnene_podminky(self, hasic: 'Hasic', rok: int) -> list[str]:
         if self.obdrzene:
             return [f'Obdrženo {self.obdrzene_rok}']
         if rok - int(hasic.clenem_od[-4:]) >= 40:
@@ -653,8 +649,7 @@ class Stuzka_za_vernost_50(Vyznamenani):
             return True
         return False
 
-    def splnene_podminky(self, hasic: 'Hasic') -> list[str]:
-        rok = datetime.now().year
+    def splnene_podminky(self, hasic: 'Hasic', rok: int) -> list[str]:
         if self.obdrzene:
             return [f'Obdrženo {self.obdrzene_rok}']
         if rok - int(hasic.clenem_od[-4:]) >= 50:
@@ -674,8 +669,7 @@ class Stuzka_za_vernost_60(Vyznamenani):
             return True
         return False
 
-    def splnene_podminky(self, hasic: 'Hasic') -> list[str]:
-        rok = datetime.now().year
+    def splnene_podminky(self, hasic: 'Hasic', rok: int) -> list[str]:
         if self.obdrzene:
             return [f'Obdrženo {self.obdrzene_rok}']
         if rok - int(hasic.clenem_od[-4:]) >= 60:
@@ -695,8 +689,7 @@ class Stuzka_za_vernost_70(Vyznamenani):
             return True
         return False
 
-    def splnene_podminky(self, hasic: 'Hasic') -> list[str]:
-        rok = datetime.now().year
+    def splnene_podminky(self, hasic: 'Hasic', rok: int) -> list[str]:
         if self.obdrzene:
             return [f'Obdrženo {self.obdrzene_rok}']
         if rok - int(hasic.clenem_od[-4:]) >= 70:
@@ -716,8 +709,7 @@ class Stuzka_za_vernost_80(Vyznamenani):
             return True
         return False
 
-    def splnene_podminky(self, hasic: 'Hasic') -> list[str]:
-        rok = datetime.now().year
+    def splnene_podminky(self, hasic: 'Hasic', rok: int) -> list[str]:
         if self.obdrzene:
             return [f'Obdrženo {self.obdrzene_rok}']
         if rok - int(hasic.clenem_od[-4:]) >= 80:
@@ -732,7 +724,7 @@ class Titul_cestny_clen_shcms(Vyznamenani):
     def podminka(self, hasic: 'Hasic', rok: int) -> bool:
         return False
 
-    def splnene_podminky(self, hasic: 'Hasic') -> list[str]:
+    def splnene_podminky(self, hasic: 'Hasic', rok: int) -> list[str]:
         if self.obdrzene:
             return [f'Obdrženo {self.obdrzene_rok}']
         return ['']
@@ -744,6 +736,7 @@ class Titul_zaslouzily_hasic(Vyznamenani):
 
     def podminka(self, hasic: 'Hasic', rok: int) -> bool:
         if (
+            not self.obdrzene and
             hasic.medaile_za_mimoradne_zasluhy.obdrzene and
             rok - hasic.medaile_za_mimoradne_zasluhy.obdrzene_rok >= 5 and
             rok - int(hasic.datum_narozeni[-4:]) >= 65 and
@@ -752,8 +745,7 @@ class Titul_zaslouzily_hasic(Vyznamenani):
             return True
         return False
 
-    def splnene_podminky(self, hasic: 'Hasic') -> list[str]:
-        rok = datetime.now().year
+    def splnene_podminky(self, hasic: 'Hasic', rok: int) -> list[str]:
         if self.obdrzene:
             return [f'Obdrženo {self.obdrzene_rok}']
         if (
@@ -783,7 +775,6 @@ class Titul_zaslouzily_hasic(Vyznamenani):
                     f'{int(hasic.clenem_od[-4:]) + 40} (40 let členství)',
                 )
             return vysledek
-        return ['Chyba']
 
 
 class Zasluzny_rad_ceskeho_hasicstva(Vyznamenani):
@@ -793,7 +784,7 @@ class Zasluzny_rad_ceskeho_hasicstva(Vyznamenani):
     def podminka(self, hasic: 'Hasic', rok: int) -> bool:
         return False
 
-    def splnene_podminky(self, hasic: 'Hasic') -> list[str]:
+    def splnene_podminky(self, hasic: 'Hasic', rok: int) -> list[str]:
         if self.obdrzene:
             return [f'Obdrženo {self.obdrzene_rok}']
         return ['']

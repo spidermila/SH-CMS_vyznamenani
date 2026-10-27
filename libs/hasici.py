@@ -49,39 +49,51 @@ class Hasici:
             'zasluzny_rad_ceskeho_hasicstva': 'Záslužný Řád českého hasičstva',
         }
 
+    def _pridej(self, hasic: Hasic) -> None:
+        if hasic.datum_narozeni and hasic.clenem_od:
+            self.hasici.append(hasic)
+        else:
+            print(
+                f'Varování: {hasic.jmeno} nemá datum narození/členství, ' +
+                'přeskočeno',
+            )
+
     def create_hasici_from_export(self, lines: list[str]) -> None:
         _novy_hasic = Hasic()
         for i, line in enumerate(lines):
-            if not i + 1 >= len(lines):
-                # ziskat jmeno
-                if '==========================' in lines[i + 1][0]:
-                    if _novy_hasic.jmeno:
-                        self.hasici.append(_novy_hasic)
-                        _novy_hasic = Hasic()
-                    _novy_hasic.jmeno = ' '.join(line)
-                # ziskat dalsi informace
-                elif line[0] == '-':  # radky zacinajici pomlckou
+            varovani = f'Varování: řádek {i + 1} přeskočen: {" ".join(line)}'
+            # ziskat jmeno
+            if i + 1 < len(lines) and '=' * 26 in lines[i + 1][0]:
+                if _novy_hasic.jmeno:
+                    self._pridej(_novy_hasic)
+                _novy_hasic = Hasic()
+                _novy_hasic.jmeno = ' '.join(line)
+            # ziskat dalsi informace
+            elif line[0] == '-':  # radky zacinajici pomlckou
+                if len(line) < 3:
+                    print(varovani)
+                    continue
+                try:
                     if 'Členem SHČMS od' in ' '.join(line):
+                        int(line[1][:-1][-4:])
                         _novy_hasic.clenem_od = line[1][:-1]
                     if 'Datum narození' in ' '.join(line):
+                        int(line[1][:-1][-4:])
                         _novy_hasic.datum_narozeni = line[1][:-1]
                     if line[2] == 'Věk':
                         _novy_hasic.vek = int(line[1][:-1])
                     for vyz in _novy_hasic.vyznamenani:
                         llen = len(vyz.nazev.split())
                         if ' '.join(line[-llen:]) == vyz.nazev:
-                            vyz.obdrzene = True
                             obdrzene_str = ' '.join(line[:-llen])[2:][:-1]
                             if ',' in obdrzene_str:
-                                obdrzene_rok = int(
-                                    obdrzene_str.split(',')[-1].strip(),
-                                )
-                            else:
-                                obdrzene_rok = int(obdrzene_str)
-                            vyz.obdrzene_rok = obdrzene_rok
-                        else:
-                            pass
-        self.hasici.append(_novy_hasic)
+                                obdrzene_str = obdrzene_str.split(',')[-1]
+                            vyz.obdrzene_rok = int(obdrzene_str.strip())
+                            vyz.obdrzene = True
+                except ValueError:
+                    print(varovani)
+        if _novy_hasic.jmeno:
+            self._pridej(_novy_hasic)
 
     def print_all(self) -> None:
         print('hasici a jiz ziskane vyznamenani:')
@@ -99,10 +111,10 @@ class Hasici:
                     print(vyz.nazev)
             print('-' * 20)
 
-    def print_splnene_podminky(self) -> None:
+    def print_splnene_podminky(self, rok: int) -> None:
         print('Splnene podminky:')
         for hasic in self.hasici:
             print(hasic.jmeno)
             for vyz in hasic.vyznamenani:
-                pprint([vyz.nazev, vyz.splnene_podminky(hasic)])
+                pprint([vyz.nazev, vyz.splnene_podminky(hasic, rok)])
             print('-'*30)

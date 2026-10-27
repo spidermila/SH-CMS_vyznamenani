@@ -6,7 +6,7 @@ addopts = "--cov --cov-report=term-missing"
 [tool.coverage.run]
 branch = true
 source = [".", "libs"]
-omit = ["tests/*"]
+omit = ["tests/*", "web/*"]
 
 [tool.coverage.report]
 fail_under = 100

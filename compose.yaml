@@ -1,0 +1,16 @@
+services:
+  shcms-vyznamenani-web:
+    dns:
+      - 8.8.8.8
+    container_name: shcms-vyznamenani-web
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - BUILDKIT_DOCKERFILE_SYNTAX=docker/dockerfile:1
+    image: shcms-vyznamenani-web:latest
+    ports:
+      - "5556:5000"
+    restart: unless-stopped
+    env_file:
+      - .env

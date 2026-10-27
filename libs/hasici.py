@@ -58,7 +58,7 @@ class Hasici:
                 'přeskočeno',
             )
 
-    def create_hasici_from_export(self, lines: list[str]) -> None:
+    def create_hasici_from_export(self, lines: list[list[str]]) -> None:
         _novy_hasic = Hasic()
         for i, line in enumerate(lines):
             varovani = f'Varování: řádek {i + 1} přeskočen: {" ".join(line)}'

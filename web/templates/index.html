@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SH-ČMS Splněné podmínky pro vyznamenání</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 3rem;
+        }
+        .card {
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Instrukce</h5>
+                        <p class="card-text">
+                            Tento nástroj získá seznam členů z <strong>evidencesdh.cz</strong> a vygeneruje excelovou tabulku (.xlsx soubor) s přehledem splněných podmínek pro vyznamenání.
+                        </p>
+                        <ol class="ps-3 mb-0">
+                            <li>Zadejte své přihlašovací údaje (email & heslo) pro web evidencesdh.cz.</li>
+                            <li>Otevřete Google Authenticator a zadejte aktuální kód.</li>
+                            <li>Klikněte na "Potvrdit".</li>
+                            <li>Vyčkejte, až se zobrazí link pro stažení výsledného souboru.</li>
+                        </ol>
+                        <p class="card-text mt-3">
+                            <b>Upozornění:</b> Odkaz pro stažení bude platný pouze po dobu 5 minut. Po uplynutí této doby bude nutné proces opakovat.
+                        </p>
+                        <p class="card-text mt-2 text-muted small">
+                            Vaše přihlašovací údaje ani seznam členů nejsou na serveru trvale ukládány.
+                        </p>
+                    </div>
+                </div>
+                {% if download_link %}
+                    <div class="card">
+                        <div class="card-header bg-primary text-white text-center py-3">
+                            <h4 class="mb-0">Stažení výsledného souboru</h4>
+                        </div>
+                        <div class="card-body p-4">
+                            {% if error %}
+                                <div class="alert alert-danger" role="alert">
+                                    {{ error }}
+                                </div>
+                            {% endif %}
+
+                            {% if success_msg %}
+                                <div class="alert alert-success" role="alert">
+                                    {{ success_msg }}
+                                </div>
+                            {% endif %}
+                                <div class="d-grid mb-4">
+                                    <a href="{{ download_link }}" class="btn btn-success btn-lg">
+                                        Stáhnout výsledný soubor
+                                    </a>
+                                </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="card">
+                        <div class="card-header bg-primary text-white text-center py-3">
+                            <h4 class="mb-0">Přihlašovací údaje pro evidencesdh.cz</h4>
+                        </div>
+                        <div class="card-body p-4">
+                            {% if error %}
+                                <div class="alert alert-danger" role="alert">
+                                    {{ error }}
+                                </div>
+                            {% endif %}
+
+                            {% if success_msg %}
+                                <div class="alert alert-success" role="alert">
+                                    {{ success_msg }}
+                                </div>
+                            {% endif %}
+                                <form method="POST">
+                                    <div class="mb-3">
+                                        <label for="username" class="form-label">Uživatelské jméno (Email)</label>
+                                        <input type="text" class="form-control" id="username" name="username" required>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="password" class="form-label">Heslo</label>
+                                        <input type="password" class="form-control" id="password" name="password" required>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label for="ga_code" class="form-label">2FA Kód (Google Authenticator)</label>
+                                        <input type="text" class="form-control" id="ga_code" name="ga_code" autocomplete="off" required>
+                                    </div>
+
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary btn-lg">Potvrdit</button>
+                                    </div>
+                                </form>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

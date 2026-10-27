@@ -41,6 +41,15 @@ pip install -r requirements.txt
 python SH-CMS_vyznamenani.py muj_export.txt -o muj_vystup.xlsx
 ```
 
+## Webová verze
+Program lze provozovat i jako webovou aplikaci v Dockeru. Aplikace se po zadání přihlašovacích údajů a 2FA kódu sama přihlásí na evidencesdh.cz, stáhne export a vrátí hotovou tabulku.
+```bash
+cp .env_sample .env
+python3 -c "import secrets; print(secrets.token_urlsafe(32))"   # výsledek vložte do .env jako APP_SECRET_KEY
+docker compose up -d --build
+```
+Aplikace pak běží na portu 5556, např. http://localhost:5556/
+
 ## Vývoj a testy
 ```bash
 pip install -r requirements-dev.txt

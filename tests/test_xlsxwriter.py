@@ -60,7 +60,8 @@ def test_permission_error_retry(make_hasic, tmp_path, monkeypatch, capsys):
     out = tmp_path / 'o.xlsx'
     ws = write_and_load([h], out)
     assert len(calls) == 2
-    assert capsys.readouterr().out.count('je používán jinou aplikací. Zavřete') == 1
+    printed = capsys.readouterr().out
+    assert printed.count('je používán jinou aplikací. Zavřete') == 1
     assert ws['A2'].value == 'Karel Zkusebni'
 
 

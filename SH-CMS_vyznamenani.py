@@ -52,6 +52,12 @@ def main():
 
     hasici = Hasici()
     hasici.create_hasici_from_export(lines)
+    if not hasici.hasici:
+        print(
+            'Export neobsahuje žádného člena s platným datem narození ' +
+            'a členství!',
+        )
+        return 1
 
     w = Xlsxwriter(hasici.hasici)
     w.write(args.output, args.rok)

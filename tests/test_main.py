@@ -63,12 +63,13 @@ def test_rok_option(monkeypatch, export_file, tmp_path, rok, text):
     assert cell(ws, 'Stužka za věrnost 20 let', row=3).value == text
 
 
-def test_empty_export(monkeypatch, tmp_path):
+def test_empty_export(monkeypatch, capsys, tmp_path):
     empty = tmp_path / 'empty.txt'
     empty.write_text('')
     out = tmp_path / 'o.xlsx'
-    assert run(monkeypatch, str(empty), '-o', str(out)) == 0
-    assert 'splnene podminky' in openpyxl.load_workbook(out)
+    assert run(monkeypatch, str(empty), '-o', str(out)) == 1
+    assert 'Export neobsahuje' in capsys.readouterr().out
+    assert not out.exists()
 
 
 def test_main_guard(monkeypatch, tmp_path):

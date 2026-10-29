@@ -1,6 +1,7 @@
 import contextlib
 import os
 import tempfile
+from typing import BinaryIO
 
 import pandas as pd  # type: ignore
 from openpyxl.styles import Alignment  # type: ignore
@@ -13,7 +14,7 @@ class Xlsxwriter:
     def __init__(self, hasici: list[Hasic]) -> None:
         self.hasici = hasici
 
-    def write(self, soubor: str, rok: int) -> None:
+    def write(self, soubor: str | BinaryIO, rok: int) -> None:
         data = {}
         for hasic in self.hasici:
             zaznamy = {}
@@ -24,6 +25,10 @@ class Xlsxwriter:
             data[hasic.jmeno] = zaznamy
         df = pd.DataFrame(data)
         transposed = df.T
+        # buffer (web): write directly, no temp file needed
+        if not isinstance(soubor, str):
+            self._zapis(soubor, transposed)
+            return
         # ponytail: mkstemp makes the file 0600, os.replace keeps that mode
         fd, tmp = tempfile.mkstemp(
             suffix='.xlsx',
@@ -31,34 +36,7 @@ class Xlsxwriter:
         )
         try:
             with os.fdopen(fd, 'wb') as f:
-                writer = pd.ExcelWriter(f, engine='openpyxl')
-                transposed.to_excel(
-                    writer,
-                    sheet_name='splnene podminky',
-                    header=True,
-                    index=True,
-                )
-                ws = writer.sheets['splnene podminky']
-                for row in range(1, ws.max_row + 1):
-                    for col in range(1, ws.max_column + 1):
-                        _cell = ws.cell(column=col, row=row)
-                        _cell.alignment = Alignment(wrap_text=True)
-                        if _cell.value:
-                            if (
-                                'Obdrženo' in _cell.value or
-                                'Již se nedává' in _cell.value
-                            ):
-                                _cell.fill = PatternFill(
-                                    start_color='00969696',
-                                    fill_type='solid',
-                                )
-                            elif 'Podmínky splněny' in _cell.value:
-                                _cell.fill = PatternFill(
-                                    start_color='00CCFFCC',
-                                    fill_type='solid',
-                                )
-                ws.freeze_panes = ws['A2']
-                writer.close()
+                self._zapis(f, transposed)
             while True:
                 try:
                     os.replace(tmp, soubor)
@@ -73,3 +51,33 @@ class Xlsxwriter:
             with contextlib.suppress(OSError):
                 os.remove(tmp)
             raise
+
+    def _zapis(self, f: BinaryIO, transposed: pd.DataFrame) -> None:
+        writer = pd.ExcelWriter(f, engine='openpyxl')
+        transposed.to_excel(
+            writer,
+            sheet_name='splnene podminky',
+            header=True,
+            index=True,
+        )
+        ws = writer.sheets['splnene podminky']
+        for row in range(1, ws.max_row + 1):
+            for col in range(1, ws.max_column + 1):
+                _cell = ws.cell(column=col, row=row)
+                _cell.alignment = Alignment(wrap_text=True)
+                if _cell.value:
+                    if (
+                        'Obdrženo' in _cell.value or
+                        'Již se nedává' in _cell.value
+                    ):
+                        _cell.fill = PatternFill(
+                            start_color='00969696',
+                            fill_type='solid',
+                        )
+                    elif 'Podmínky splněny' in _cell.value:
+                        _cell.fill = PatternFill(
+                            start_color='00CCFFCC',
+                            fill_type='solid',
+                        )
+        ws.freeze_panes = ws['A2']
+        writer.close()

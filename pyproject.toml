@@ -1,0 +1,12 @@
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "--cov --cov-report=term-missing"
+
+[tool.coverage.run]
+branch = true
+source = [".", "libs"]
+omit = ["tests/*"]
+
+[tool.coverage.report]
+fail_under = 100

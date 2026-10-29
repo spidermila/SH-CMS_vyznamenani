@@ -48,14 +48,13 @@ def main():
     with open(args.soubor, encoding='UTF-8') as fp:
         for line in fp:
             lline = line.strip().split(' ')
-            if len(lline) > 0:
-                lines.append(lline)
+            lines.append(lline)
 
     hasici = Hasici()
     hasici.create_hasici_from_export(lines)
 
     w = Xlsxwriter(hasici.hasici)
-    w.write(args.output)
+    w.write(args.output, args.rok)
     return 0
 
 

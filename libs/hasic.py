@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from libs.vyznamenani import Cestne_uznani_ksh
 from libs.vyznamenani import Cestne_uznani_okrsku
 from libs.vyznamenani import Cestne_uznani_osh
@@ -37,7 +35,6 @@ from libs.vyznamenani import Zasluzny_rad_ceskeho_hasicstva
 
 class Hasic:
     def __init__(self):
-        self.now = datetime.now()
         self.jmeno: str = ''
         self.datum_narozeni: str = ''
         self.vek: int = 0

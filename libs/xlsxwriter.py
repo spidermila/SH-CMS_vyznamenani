@@ -43,7 +43,7 @@ class Xlsxwriter:
                     break
                 except PermissionError:
                     print(
-                        f'Soubor {soubor} je používán jinou aplikací.' +
+                        f'Soubor {soubor} je používán jinou aplikací. ' +
                         'Zavřete soubor a stiskněte Enter.',
                     )
                     input()
